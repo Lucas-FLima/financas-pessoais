@@ -8,28 +8,46 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native';
+
+import {useForm, Controller} from 'react-hook-form';
 
 import {useNavigationStackTyped} from '../../hooks/navigation';
 
 import Logo from '../../assets/icons/Logo.svg';
 import CustomInput from '../../components/CustomInput';
 
+import {useAuth} from '../../contexts/Auth';
+
 type Form = {
   name: string;
   email: string;
   password: string;
+  confirmPassword: string;
 };
+
 export default function SignUp() {
+  const {signUp, loadingAuth} = useAuth();
   const navigation = useNavigationStackTyped();
   const [isPasswordVisible, setIsPasswordVisible] = useState(true);
-  const [form, setForm] = useState<Form>({
-    name: '',
-    email: '',
-    password: '',
+
+  const {
+    control,
+    handleSubmit,
+    formState: {errors},
+  } = useForm<Form>({
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
   });
 
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const onSubmit = (data: Form) => {
+    console.log(data);
+  };
 
   return (
     <SafeAreaView style={styles.containerSafeArea}>
@@ -40,52 +58,100 @@ export default function SignUp() {
         <ScrollView contentContainerStyle={styles.scrollView}>
           <View style={styles.container}>
             <Logo width={200} height={200} stroke={'#00B94A'} />
-            <CustomInput
-              label="Nome completo"
-              placeholder="ex: João da Silva"
-              placeholderTextColor={'#D0D0D0'}
-              value={form.name}
-              onChangeText={name => setForm({...form, name})}
-              autoCorrect={false}
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              name="name"
+              render={({field: {onChange, value}}) => (
+                <CustomInput
+                  label="Nome completo"
+                  placeholder="ex: João da Silva"
+                  placeholderTextColor={'#D0D0D0'}
+                  value={value}
+                  onChangeText={onChange}
+                  autoCorrect={false}
+                />
+              )}
             />
-            <CustomInput
-              label="Email"
-              placeholder="email@email.com"
-              placeholderTextColor={'#D0D0D0'}
-              value={form.email}
-              onChangeText={email => setForm({...form, email})}
-              autoCorrect={false}
-              keyboardType="email-address"
-              autoCapitalize="none"
+            {errors.name && <Text>Nome é obrigatório</Text>}
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              name="email"
+              render={({field: {onChange, value}}) => (
+                <CustomInput
+                  label="Email"
+                  placeholder="ex: "
+                  placeholderTextColor={'#D0D0D0'}
+                  value={value}
+                  onChangeText={onChange}
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              )}
             />
-            <CustomInput
-              label="Senha"
-              placeholder="********"
-              placeholderTextColor={'#D0D0D0'}
-              value={form.password}
-              onChangeText={password => setForm({...form, password})}
-              secureTextEntry={isPasswordVisible}
-              isPassword={true}
-              togglePasswordVisibility={() =>
-                setIsPasswordVisible(!isPasswordVisible)
-              }
+            {errors.email && <Text>Email é obrigatório</Text>}
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              name="password"
+              render={({field: {onChange, value}}) => (
+                <CustomInput
+                  label="Senha"
+                  placeholder="********"
+                  placeholderTextColor={'#D0D0D0'}
+                  value={value}
+                  onChangeText={onChange}
+                  secureTextEntry={isPasswordVisible}
+                  isPassword={true}
+                  togglePasswordVisibility={() =>
+                    setIsPasswordVisible(!isPasswordVisible)
+                  }
+                />
+              )}
             />
-            <CustomInput
-              label="Confirmar senha"
-              placeholder="********"
-              placeholderTextColor={'#D0D0D0'}
-              value={confirmPassword}
-              onChangeText={confirmPassword =>
-                setConfirmPassword(confirmPassword)
-              }
-              secureTextEntry={isPasswordVisible}
-              isPassword={true}
-              togglePasswordVisibility={() =>
-                setIsPasswordVisible(!isPasswordVisible)
-              }
+            {errors.password && <Text>Senha é obrigatório</Text>}
+            <Controller
+              control={control}
+              rules={{
+                required: true,
+              }}
+              name="confirmPassword"
+              render={({field: {onChange, value}}) => (
+                <CustomInput
+                  label="Confirmar senha"
+                  placeholder="********"
+                  placeholderTextColor={'#D0D0D0'}
+                  value={value}
+                  onChangeText={onChange}
+                  secureTextEntry={isPasswordVisible}
+                  isPassword={true}
+                  togglePasswordVisibility={() =>
+                    setIsPasswordVisible(!isPasswordVisible)
+                  }
+                />
+              )}
             />
-            <TouchableOpacity style={styles.signInButton} activeOpacity={0.7}>
-              <Text style={styles.textButton}>Criar conta</Text>
+            {errors.confirmPassword && (
+              <Text>Confirmar senha é obrigatório</Text>
+            )}
+            <TouchableOpacity
+              style={styles.signInButton}
+              activeOpacity={0.7}
+              onPress={handleSubmit(onSubmit)}
+              disabled={loadingAuth}>
+              {loadingAuth ? (
+                <ActivityIndicator color={'#FFF'} />
+              ) : (
+                <Text style={styles.textButton}>Criar conta</Text>
+              )}
             </TouchableOpacity>
             <View style={styles.containerSignUpButton}>
               <Text style={styles.textInfoSignUp}>Já possuo conta! </Text>
